@@ -1,3 +1,7 @@
+'''
+Original names of vendor associated variables have been changed for confidentiality
+'''
+
 import pandas as pd
 import csv, os, pysftp, shutil, datetime, logging
 import smtplib
@@ -7,13 +11,13 @@ today = datetime.date.today()
 folderString = today.strftime('%m-%d-%Y')
 
 # archive code updates each day
-newpath = '\\\\OTOFileServ\\Payroll\\Talent Reef Supervisors\\Archive\\' + folderString
+newpath = '\\\\FileServ\\Payroll\\VENDOR\\Archive\\' + folderString
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-svDir = '\\\\OTOFileServ\\Payroll\\Talent Reef Supervisors'  # supervisor report dir
+svDir = '\\\\FileServ\\Payroll\\VENDOR'  # supervisor report dir
 filenameDir = svDir + '\\' + 'Archive' + '\\' + folderString + '\\'  # points to archive folder for specific file names
-talentDir = '/outbound/pde'  # dir in talentReef's SFTP folder for new employee csv
+talentDir = '/outbound/pde'  # dir in VENDOR's SFTP folder for new employee csv
 
 # counter for changes made in CSV file; changes = upload new file to SFTP
 changeCount = 0
@@ -30,32 +34,31 @@ logging.basicConfig(
 )
 
 
-# Email talentReef representative of Supervisor update (if needed)
-# EMAIL_PASSWORD = os.environ.get('tiimport_PASS')
-# EMAIL_ADDRESS = os.environ.get('tiimport_USER')
-#
-# subject = 'Changes made in Employee CSV file'
-# msg = 'Changes in the supervisor column were made to the CSV file. \
-#        Please update the supervisor information to reflect current data.'
-#
-# def send_email(subject, msg):
-#     try:
-#         server = smtplib.SMTP('smpt.gmail.com:587')
-#         server.ehlo()
-#         server.starttls()
-#         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-#         message = 'Subject: {}\n\n{}'.format(subject, msg)
-#         # server.sendmail(EMAIL_ADDRESS, 'tchilds@talentreef.com', message)
-#         server.sendmail(EMAIL_ADDRESS, 'dustinjamesknudsen@gmail.com', message)
-#         server.quit()
-#         print('Email successfully delivered')
-#     except:
-#         print('Email failed to deliver')
+# Email VENDOR representative of Supervisor update (if needed)
+EMAIL_PASSWORD = os.environ.get('tiimport_PASS')
+EMAIL_ADDRESS = os.environ.get('tiimport_USER')
+
+subject = 'Changes made in Employee CSV file'
+msg = 'Changes in the supervisor column were made to the CSV file. \
+       Please update the supervisor information to reflect current data.'
+
+def send_email(subject, msg):
+    try:
+        server = smtplib.SMTP('smtp.SERVERDOMAIN.com:587')
+        server.ehlo()
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        message = 'Subject: {}\n\n{}'.format(subject, msg)
+        server.sendmail(EMAIL_ADDRESS, 'TEST@VENDORDOMAIN.com', message)
+        server.quit()
+        print('Email successfully delivered')
+    except:
+        print('Email failed to deliver')
 
 def attrFunc():
     for attr in dirStruct:
         if attr.filename[0:7] == 'NewEmp_':
-            sftp.get(talentDir + '/' + attr.filename,
+            sftp.get(VENDORdir + '/' + attr.filename,
                      localpath=svDir + '\\' +
                                attr.filename,
                      preserve_mtime=True)
@@ -94,10 +97,10 @@ def rowIter():
 # look for supervisor report, convert file to dataframe, convert df to list, format list
 # to contain proper supervisor codes, append codes to new list for future comparison with employee file
 
-if "Supervisor Report_Dustin.xlsx" in os.listdir():
+if "Supervisor.xlsx" in os.listdir():
     print("Supervisor report detected")
     # filename, file_ext = os.path.splitext(file)
-    file = "Supervisor Report_Dustin.xlsx"
+    file = "Supervisor.xlsx"
     df = pd.read_excel(file, index_col=0)
     for id in df['Employee Number (Supervisor)'].dropna().to_list():
         id = int(id)
@@ -118,10 +121,10 @@ else:
     logging.info("----                           ")
     quit()
 
-# connect to talentReef's SFTP server
-hostName = 'sftp.talentreef.com'
-myuserName = 'otodev'
-mypw = 'otoDEV!@#'
+# connect to VENDOR's SFTP server
+hostName = 'sftp.VENDOR.com'
+myuserName = ## censored ##
+mypw = ##censored##
 
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
@@ -134,7 +137,7 @@ with pysftp.Connection(
         cnopts=cnopts
 ) as sftp:
     print("\n*** Connection established ***\n")
-    sftp.cwd(talentDir)
+    sftp.cwd(VENDORdir)
     dirStruct = sftp.listdir_attr()
 
     # scan SFTP folder for new employee file, download to local directory
@@ -176,7 +179,6 @@ with pysftp.Connection(
                     logging.info('» Upload Complete!')
                     logging.info('----                                      ')
                     shutil.move(file, filenameDir + filename + '_c' + file_ext)
-                    # os.remove(svDir + '\\' + file)
                     send_email(subject, msg)
                 else:
                     print('\n - No changes detected. File will not be uploaded\n')
@@ -184,4 +186,3 @@ with pysftp.Connection(
                     logging.info('----                                      ')
                     os.rename(svDir + '\\' + filename + '_New' + file_ext, svDir + '\\' + file)
                     shutil.move(file, filenameDir + filename + '_nc' + file_ext)
-                    # os.remove(svDir + '\\' + file)
