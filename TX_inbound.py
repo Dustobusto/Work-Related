@@ -1,9 +1,7 @@
 import os, datetime
 
 today = datetime.date.today()
-folderString = today.strftime('%m%Y')
-folderString2 = today.strftime('%Y%m')
-folderString3 = today.strftime('%Y%m%d')
+timecode = today.strftime('%Y%m%d')
 
 sdrive = 'S:'
 transactionFolder = 'Transaction Import'
@@ -20,8 +18,8 @@ for i in os.listdir():
             data = file.readlines()
 
         file, file_ext = os.path.splitext(i)
-        x = file.split('_')
-        file = "IJ-" + x[1] + '-' + folderString3 + "_TX"
+        hotelID = file.split('_')
+        file = "IJ-" + hotelID[1] + '-' + timecode + "_TX"
         file_ext = '.dta'
         filename = file + file_ext
         with open(filename, 'w') as f:
@@ -29,8 +27,8 @@ for i in os.listdir():
                 if 'Level0' in line:
                     f.write(line)
                 elif 'Level1' in line:
-                    z = line.split(',')
-                    x = ','.join(z[0:11])
-                    f.write(x + '\n')
+                    acctBase = line.split(',')
+                    hotelID = ','.join(acctBase[0:11])
+                    f.write(hotelID + '\n')
         f.close()
         os.remove(i)
