@@ -1,75 +1,51 @@
 import os, re, pyperclip, time, logging, shutil, datetime
 
+#date and time
 today = datetime.date.today()
 folderString = today.strftime('%m%Y')
 
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString
+# lists to create folders for each accounting file type and their destination
+logList = ['IJ Log', 'IQ Log', 'GJ Log', 'TX Log']
+evalList = ['DTA Files', 'Good', 'Bad']
+
+oldpath = 'S:\\Transaction Import\\Processed Folder\\'
+
+# create path if doesn't exist
+newpath = oldpath + folderString
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\DTA Files'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
+logpath = newpath + '\\Log Archive'
+if not os.path.exists(logpath):
+    os.makedirs(logpath)
 
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\Good'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\Bad'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\DTA Files'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\Good'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\Bad'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\DTA Files'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\Good'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\Bad'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\DTA Files'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\Good'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\Bad'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
-newpath = 'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\Log Archive'
-if not os.path.exists(newpath):
-    os.makedirs(newpath)
-
+def createPath(newpath, acctType, fileEval):
+    createPath = newpath + '\\' + acctType + '\\' + fileEval
+    return createPath
+    
+# function to create accounting file type folders if they don't exist
+def newPathFunc(acctType, fileEval):
+    createdPath = createPath(newpath, acctType, fileEval)
+    if not os.path.exists(createdPath):
+        os.makedirs(createdPath)
+        
+# execute function every time script is called
+for i in logList
+    for j in evalList:
+        newPathFunc(i, j)
+        
+       
 sDir = 'S:/Transaction Import/Inbound Folder'
 inDir = os.path.join(sDir)
 
 os.chdir(inDir)
 logging.basicConfig(filename='Logfile.log', level=logging.INFO, format='%(asctime)s %(message)s', datefmt='[%I:%M %p %A, %B %d, %Y]')
 
+# big automation function
 def autohotkey():
 
-   # print(time.strftime("\n[%I:%M %p %A, %B %d, %Y]") + " Attempting to execute AHK script...")
-   # logging.info('     Attempting to execute import automation script...')
     logging.info('                                                       ')
+    
     # Launch AutoHotKey script // Will use TIAUT00.exe to import DTA files into DynamicsSL
     try:
         os.system("C:/Users/TIImport/desktop/TI_Script.exe")
@@ -81,87 +57,85 @@ def autohotkey():
     for file in os.listdir():
         if file[-4:] == '.log'.upper():
             f = open(file, 'r')
-            x = f.read()
+            data_file = f.read()
             f.close()
-            if 'Level0,,IJ' in x:
-                if 'Batch is out of balance' not in x and 'The Number of Errors detected was 0' in x:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\Good\\' + file)
+            if 'Level0,,IJ' in data_file:
+                if 'Batch is out of balance' not in data_file and 'The Number of Errors detected was 0' in data_file:
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[0], evalList[1]) + '\\' + file)
                     logging.info('     ** IMPORT SUCCESSFUL **')
                 else:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\Bad\\' + file)
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[0], evalList[2]) + '\\' + file)
                     logging.info('     @@ IMPORT FAILED @@')
-            elif 'Level0,,IQ' in x:
-                if 'Batch is out of balance' not in x and 'The Number of Errors detected was 0' in x:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\Good\\' + file)
+            elif 'Level0,,IQ' in data_file:
+                if 'Batch is out of balance' not in data_file and 'The Number of Errors detected was 0' in data_file:
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[1], evalList[1]) + '\\' + file)
                     logging.info('     ** IMPORT SUCCESSFUL **')
                 else:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\Bad\\' + file)
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[1], evalList[2]) + '\\' + file)
                     logging.info('     @@ IMPORT FAILED @@')
-            elif 'Level0,,GJ' in x:
-                if 'Batch is out of balance' not in x and 'The Number of Errors detected was 0' in x:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\Good\\' + file)
+            elif 'Level0,,GJ' in data_file:
+                if 'Batch is out of balance' not in data_file and 'The Number of Errors detected was 0' in data_file:
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[2], evalList[1]) + '\\' + file)
                     logging.info('     ** IMPORT SUCCESSFUL **')
                 else:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\Bad\\' + file)
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[2], evalList[2]) + '\\' + file)
                     logging.info('     @@ IMPORT FAILED @@')
-            elif 'Level0,,TX' in x:
-                if 'Batch is out of balance' not in x and 'The Number of Errors detected was 0' in x:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\Good\\' + file)
+            elif 'Level0,,TX' in data_file:
+                if 'Batch is out of balance' not in data_file and 'The Number of Errors detected was 0' in data_file:
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[3], evalList[1]) + '\\' + file)
                     logging.info('     ** IMPORT SUCCESSFUL **')
                 else:
-                    shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                                'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\Bad\\' + file)
+                    shutil.move(oldpath + file,
+                                createPath(newpath, logList[3], evalList[2]) + '\\' + file)
                     logging.info('     @@ IMPORT FAILED @@')
         elif file[0:13] == 'TI Automation':
             f = open(file, 'r')
-            x = f.readlines()
+            data_file = f.readlines()
             f.close()
-            if "Processing Error" in x:
+            if "Processing Error" in data_file:
                 logging.info('     ## IMPORT FAILED ## Processing Error. Check logs for file status')
-            shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                        'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\Log Archive\\' + file)
+            shutil.move(oldpath + file,
+                        logpath + file)
         elif file[-4:] == '.dta':
             f = open(file, 'r')
-            x = f.readline()
-            x = x.split(',')
+            data_file = f.readline()
+            data_file = data_file.split(',')
             f.close()
-            if x[2] == 'IQ':
-                shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                            'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IQ Log\\DTA Files\\' + file)
-            elif x[2] == 'IJ':
-                shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                            'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\IJ Log\\DTA Files\\' + file)
-            elif x[2] == 'GJ':
-                shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                            'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\GJ Log\\DTA Files\\' + file)
-            elif x[2] == 'TX':
-                shutil.move('S:\\Transaction Import\\Processed Folder\\' + file,
-                            'S:\\Transaction Import\\Processed Folder\\' + folderString + '\\TX Log\\DTA Files\\' + file)
+            if data_file[2] == 'IQ':
+                shutil.move(oldpath + file,
+                            createPath(newpath, logList[1], evalList[0]) + '\\' + file)
+            elif data_file[2] == 'IJ':
+                shutil.move(oldpath + file,
+                            createPath(newpath, logList[0], evalList[0]) + '\\' + file)
+            elif data_file[2] == 'GJ':
+                shutil.move(oldpath + file,
+                            createPath(newpath, logList[2], evalList[0]) + '\\' + file)
+            elif data_file[2] == 'TX':
+                shutil.move(oldpath + file,
+                            createPath(newpath, logList[3], evalList[0]) + '\\' + file)
 
-    #print(time.strftime("\nChecking for more DTA files to import..."))
     logging.info("                                             ")
-    # logging.info("   Checking for more data files to process..")
 
-compList = []
+companyList = []
 logging.info(' [ BEGIN SCRIPT ]')
 
 # If file has .dta extension, map out its name and copy to clipboard for script to use
 for file in os.listdir():
     if file[-4:] == '.dta':
-        k = re.sub(r'(\D{2}\-)(\w+\-)(\d{8})(\_\D)*.dta', r'\1\2\3', file)
-        d = re.sub(r'(\D{2})\-(\w+)\-(\d{8})(\_)*(\D)*.dta', r'\2', file)
-        logging.info('   Attempting to import: {}'.format(k))
-        if d not in compList:
-            print(d)
-            compList.append(d)
-            pyperclip.copy(compList[len(compList) - 1])
+        completeFileName = re.sub(r'(\D{2}\-)(\w+\-)(\d{8})(\_\D)*.dta', r'\1\2\3', file)
+        hotelID = re.sub(r'(\D{2})\-(\w+)\-(\d{8})(\_)*(\D)*.dta', r'\2', file)
+        logging.info('   Attempting to import: {}'.format(completeFileName))
+        if hotelID not in companyList:
+            print(hotelID)
+            companyList.append(hotelID)
+            pyperclip.copy(companyList[len(companyList) - 1])
             autohotkey()
         else:
             pass
