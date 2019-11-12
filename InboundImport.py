@@ -41,7 +41,7 @@ inDir = os.path.join(sDir)
 os.chdir(inDir)
 logging.basicConfig(filename='Logfile.log', level=logging.INFO, format='%(asctime)s %(message)s', datefmt='[%I:%M %p %A, %B %d, %Y]')
 
-# big automation function
+# big automation function (hang on)
 def autohotkey():
 
     logging.info('                                                       ')
