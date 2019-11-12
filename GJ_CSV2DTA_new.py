@@ -7,6 +7,7 @@ perPost = today.strftime('%Y%m')
 currentDateFull = today.strftime('%Y%m%d')
 newTranDate = today.strftime('%m/%d/%Y')
 
+# assign drives, folders
 zdrive = 'Z:'
 sdrive = 'S:'
 CAfolder = 'CashAccrual'
@@ -15,6 +16,7 @@ archiveFolder = 'Archive'
 transactionFolder = 'Transaction Import'
 inboundFolder = 'Inbound Folder'
 
+# directories creation
 inboundDir = os.path.join(sdrive, os.sep, transactionFolder, inboundFolder)
 
 excelDir = os.path.join(zdrive, os.sep, CAfolder, currentDate, excelFolder)
@@ -25,6 +27,7 @@ archiveDir = os.path.join(zdrive, os.sep, CAfolder, currentDate, archiveFolder)
 if not os.path.exists(archiveDir):
     os.makedirs(archiveDir)
 
+# begin logging
 os.chdir(excelDir)
 logging.basicConfig(filename='Logfile.log', level=logging.INFO,format='%(asctime)s:%(message)s')
 
@@ -83,11 +86,11 @@ for filename in os.listdir():
                     pass
                 else:
                     if row['ChkCompany']:
-                        x = list(CADict.values())[8]
-                        x = float(x)
-                        x = ('%.2f' % x)
+                        tempx = list(CADict.values())[8]
+                        tempx = float(tempx)
+                        tempx = ('%.2f' % tempx)
 
-                        hList[10] = str(x)
+                        hList[10] = str(tempx)
                         headerList.append(hList)
                         f = open(excelDir + '\\' + row['ChkCompany'] + '.dta', 'w', newline='')
                         f.write(str(','.join(headerList[0])) + '\n')
@@ -100,10 +103,10 @@ for filename in os.listdir():
                 caList[7] = newTranDate
 
                 if caList[8] != '':
-                    x = caList[8]
-                    x = float(x)
-                    x = ('%.2f' % x)
-                    caList[8] = str(x)
+                    tempx = caList[8]
+                    tempx = float(tempx)
+                    tempx = ('%.2f' % tempx)
+                    caList[8] = str(tempx)
                 GJList.append(caList)
 
         csvfile.close()
